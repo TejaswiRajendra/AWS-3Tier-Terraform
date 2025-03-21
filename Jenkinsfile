@@ -6,12 +6,12 @@ pipeline {
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
         AWS_REGION            = 'us-east-1'
         S3_BUCKET_NAME        = 'tejaswirajendra-tfsbuck28081998'
-    
+    }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/TejaswiRajendra/AWS-3Tier-Terraform.git'
+                git branch: 'master', url: 'https://github.com/TejaswiRajendra/AWS-3Tier-Terraform.git'
             }
         }
 
@@ -25,10 +25,10 @@ pipeline {
         stage('Terraform Init with S3 Backend') {
             steps {
                 sh '''
-                terraform init -backend-config="bucket=tejaswirajendra-tfsbuck28081998" \
-               -backend-config="key=terraform.tfstate" \
-               -backend-config="region=us-east-1" \
-               -backend-config="encrypt=true"
+                terraform init -backend-config="bucket=${S3_BUCKET_NAME}" \
+                               -backend-config="key=terraform.tfstate" \
+                               -backend-config="region=${AWS_REGION}" \
+                               -backend-config="encrypt=true"
                 '''
             }
         }
@@ -41,14 +41,12 @@ pipeline {
 
         stage('Terraform Apply') {
             when {
-                branch 'master'  // Apply only on main branch
+                branch 'master'  // Apply only on the master branch
             }
             steps {
                 sh 'terraform apply -auto-approve tfplan'
             }
         }
-
-        
     }
 
     post {
